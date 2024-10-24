@@ -23,10 +23,10 @@ int* get_random_indexes(int count) {
 int is_index_in_array(int index, int *array, int size) {
     for (int i = 0; i < size; i++) {
         if (array[i] == index) {
-            return 1; // Index found
+            return 1;
         }
     }
-    return 0; // Index not found
+    return 0; 
 }
 
 char** get_words() { 
@@ -62,9 +62,26 @@ char** get_words() {
     fclose(file);
     free(random_indexes);
 
-    for (int i = 0; i < total_words; i++) {
-        printf("Line(%d): %s\n", i, words[i]);
-    }
+    // DEBUG
+    // for (int i = 0; i < total_words; i++) {
+    //     printf("Line(%d): %s\n", i, words[i]);
+    // }
 
     return words;
+}
+
+char* get_sentence(char **words) { 
+    
+    char* sentence = (char*)malloc(WORDS_COUNTER * MAX_WORDS_LEN * sizeof(char)); 
+    sentence[0] = '\0';  
+
+    for (int i = 0; i < WORDS_COUNTER; i++) {
+        strcat(sentence, words[i]);
+        strcat(sentence, " ");
+    }
+
+    // DEBUG
+    // printf("%s", sentence);
+
+    return sentence;
 }

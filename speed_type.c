@@ -5,9 +5,12 @@
 #include "words.h"
 
 static int countdown = 50;
+static char *sentence;
+static char** words;
 static GtkWidget *window;
 static GtkWidget *timer;
-static GtkWidget *entry;  // Declare the entry widget globally if needed for future use
+static GtkWidget *entry; 
+static GtkWidget *sentence_label; 
 
 static gboolean update_timer(gpointer user_data) {
     char time[20];
@@ -21,6 +24,20 @@ static gboolean update_timer(gpointer user_data) {
     return G_SOURCE_CONTINUE;
 }
 
+static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
+    GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(entry));
+    const gchar *input_text = gtk_entry_buffer_get_text(buffer);
+    int input_length  = strlen(input_text);
+    if (input_length == 0) return;
+
+    // for (int i = 0; i < input_length; i++) { 
+    //     if (input_text[i] == sentence[i]) {
+    //         g_print("%s")
+    //     }
+    // }
+    // if (flag)
+}
+
 static void activate(GtkApplication *app, gpointer user_data) {
     // Create the main window
     window = gtk_application_window_new(app);
@@ -31,6 +48,12 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_window_set_child(GTK_WINDOW(window), vbox);
 
+    // Create sentence label
+    words = get_words();
+    sentence = get_sentence(words);
+    sentence_label = gtk_label_new(sentence);
+    gtk_box_append(GTK_BOX(vbox), sentence_label);
+
     // Create a timer label
     timer = gtk_label_new("50");
     gtk_box_append(GTK_BOX(vbox), timer); // Add timer label to vbox
@@ -39,6 +62,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
     entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(entry), "Start typing here...");  // Set placeholder text
     gtk_box_append(GTK_BOX(vbox), entry);  // Add entry to vbox
+
+    g_signal_connect(entry, "changed", G_CALLBACK(on_entry_changed), NULL);
 
     // Start the countdown timer
     g_timeout_add(1000, update_timer, NULL);
@@ -49,12 +74,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
 int main(int argc, char **argv) {
     GtkApplication *app;
     int status;
-
-    char **words = get_words(); 
-    int length = sizeof(words) / sizeof(words[0]);
-    for (int i = 0; i < length; i++){
-        printf("%s\n", words[i]);
-    }
 
     // Create a new GtkApplication
     app = gtk_application_new(NULL, G_APPLICATION_DEFAULT_FLAGS);
