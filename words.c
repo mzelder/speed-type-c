@@ -6,7 +6,7 @@
 
 #define MAX_WORDS 370000 
 #define MAX_WORDS_LEN 30
-#define WORDS_COUNTER 30
+#define WORDS_COUNTER 5 
 
 int* get_random_indexes(int count) {
     int *indexes = (int*)malloc(count * sizeof(int));
