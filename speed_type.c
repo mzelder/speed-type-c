@@ -29,7 +29,7 @@ static gboolean update_timer(gpointer user_data) {
     return G_SOURCE_CONTINUE;
 }
 
-static void update_sentence_color(bool accurate) {
+static void update_sentence_color(bool correctness) {
     char *rest_of_sentence;
     GString *markup_string = g_string_new("");
 
@@ -38,7 +38,7 @@ static void update_sentence_color(bool accurate) {
         current_letter[0] = sentence[i];
         current_letter[1] = '\0';
 
-        const char *color = accurate ? "green" : "red";
+        const char *color = correctness ? "green" : "red";
         g_string_append_printf(markup_string, "<span font='24' foreground='%s'>%s</span>", color, current_letter);
 
     }
@@ -46,23 +46,23 @@ static void update_sentence_color(bool accurate) {
     rest_of_sentence = strdup(sentence + sentence_counter);
     g_string_append_printf(markup_string, "<span font='24'>%s</span>", rest_of_sentence);
 
-    // g_print("%s", rest_of_sentence);
+    g_print("%s\n\n", rest_of_sentence);
     gtk_label_set_markup(GTK_LABEL(sentence_label), markup_string->str);
     g_free(markup_string);
 }
 
 static void button_pressed(int input_length) {
-    g_print("GLOBA:: %d\n", global_input_length);
-    g_print("LOCAL: %d\n", input_length);
+    // g_print("GLOBAL: %d\n", global_input_length);
+    // g_print("LOCAL: %d\n", input_length);
 
     if (global_input_length > input_length) {
-        g_print("GLOBAL > LOCAL\n");
+        // g_print("GLOBAL > LOCAL\n");
         sentence_counter--;
     } else { 
-        g_print("GLOBAL < LOCAL\n");
+        // g_print("GLOBAL < LOCAL\n");
         sentence_counter++;
     }
-    g_print("%d", sentence_counter);
+    // g_print("SENTENCE_COUNTER: %d\n\n", sentence_counter);
     global_input_length = input_length;
 }
 
@@ -71,26 +71,32 @@ static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
     const gchar *input_text = gtk_entry_buffer_get_text(buffer);
     
     int input_length = strlen(input_text);
-    
     button_pressed(input_length);
 
-    char* curent_word = words[word_counter];
-    int word_length = strlen(curent_word);
+    char* current_word = words[word_counter];
+    int word_length = strlen(current_word);
     
-    for (int i = 0; i < input_length; i++) {
-        if (input_text[i] == ' ' && input_length == word_length + 1) {
+    for (int i = 0; i <= input_length - 1; i++) {
+        // Correct word and end of the word
+        if (input_text[i] == ' ') {
+            g_print("SPACE SPOTTED\n");
             gtk_entry_buffer_set_text(buffer, "", -1);
             gtk_entry_set_buffer(GTK_ENTRY(widget), buffer);
             update_sentence_color(true);
             word_counter++;
+            sentence_counter++;
             break;
         }
 
-        if (input_text[i] == curent_word[i]) {
+        // Correct letter 
+        if (input_text[i] == current_word[i]) {
+            g_print("%c\n", input_text[i]);
+            g_print("%c\n", current_word[i]);
+            g_print("correct\n");
             update_sentence_color(true);
         } else {
+            g_print("false\n"); 
             update_sentence_color(false);
-            break;
         }
     }
 }
@@ -100,6 +106,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "SpeedType");
     gtk_window_set_default_size(GTK_WINDOW(window), 500, 500);
+    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 
     // Create a vertical box to hold multiple widgets
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
