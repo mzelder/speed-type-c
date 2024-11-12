@@ -5,18 +5,14 @@
 #include "words.h"
 
 static int countdown = 50;
-static bool first_iter = true;
 
 static char *sentence;
-static int sentence_counter = 0;
-static int start_of_the_bad_letter;
 
 static char** words;
-static int word_counter = 0;
+static int words_length; 
 static char *current_word;
 static int word_length;
-
-static int previous_length;
+static int word_counter = 0;
 
 static GtkWidget *window;
 static GtkWidget *timer;
@@ -36,50 +32,36 @@ static gboolean update_timer(gpointer user_data) {
     return G_SOURCE_CONTINUE;
 }
 
-static void format_sentence(bool correctness) {
-    char *already_done_sentence; 
-    char *rest_of_sentence;
+static void format_sentence() {
     GString *markup_string = g_string_new("");
+    g_print("WORD COUNTER: %d\n", word_counter);
+    g_print("WORDS_LENGTH: %d\n", words_length);
+    g_print("CURRENT_WORD: %s\n", current_word);
 
-    if (sentence_counter == -1) {
-        rest_of_sentence = strdup(sentence + sentence_counter + 1);
-        g_string_append_printf(markup_string, "<span font='24'>%s</span>", rest_of_sentence);
-    } else {
-        g_print("Sen counter: %i\n", sentence_counter);
-        // Add word that already done
-        already_done_sentence = strndup(sentence, sentence_counter);
-        g_print("DONE: %s\n", already_done_sentence);
-        g_string_append_printf(markup_string, "<span font='24' foreground='green'>%s</span>", already_done_sentence);
-
-        // Add current word 
-
-        char current_letter[2];
-        current_letter[0] = sentence[sentence_counter];
-        current_letter[1] = '\0';
-        const char *color = correctness ? "green" : "red";
-        g_print("CURRENT LETTER: %s\n", current_letter);
-        g_string_append_printf(markup_string, "<span font='24' foreground='%s'>%s</span>", color, current_letter);
-        
-        // Add rest of the sentence
-        rest_of_sentence = strdup(sentence + sentence_counter+1);
-        g_string_append_printf(markup_string, "<span font='24'>%s</span>", rest_of_sentence);
-        g_print("REST: %s\n", rest_of_sentence);
+    // Fill done_words with completed words
+    for (int i = 0; i < word_counter; i++) {
+        g_string_append_printf(markup_string, "<span font='24' foreground='green'>%s </span>", words[i]);
     }
-    
 
+    // Add current word 
+    for (int i = 0; i < word_length; i++) { 
+        g_string_append_printf(markup_string, "<span font='24' foreground='red'>%c</span>", current_word[i]);
+    }
+    g_string_append_printf(markup_string, " ");
+
+    // Add rest of the sentence to rest_words with correct indexing
+    for (int i = word_counter + 1; i < words_length; i++) {
+        g_string_append_printf(markup_string, "<span font='24'>%s </span>", words[i]);
+    }
+    // Display the markup in the label
     gtk_label_set_markup(GTK_LABEL(sentence_label), markup_string->str);
+
+    // Free dynamically allocated memory
     g_free(markup_string);
 }
 
-static void button_pressed(int current_length) {
-    if (previous_length > current_length) sentence_counter--;
-    else sentence_counter++;
-    previous_length = current_length;
-}       
-
 static void another_word() {    
     word_counter++;
-    sentence_counter++;
     current_word = words[word_counter];
     word_length = strlen(current_word);
     current_word[word_length] = ' ';
@@ -90,26 +72,30 @@ static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
     const gchar *input_text = gtk_entry_buffer_get_text(buffer);
     int input_length = strlen(input_text);
     bool is_correct= true; 
+
+    g_print("INPUT TEXT: %s\n", input_text);
+    g_print("INPUT LENGTH: %i\n", input_length);
     
-    if (!first_iter) button_pressed(input_length);
-    if (input_length == 0) format_sentence(true);
     for (int i = 0; i < input_length; i++) {
         if (input_text[i] == current_word[i]) {
-            format_sentence(true);
+            continue;
         } else {
             is_correct = false;
-            format_sentence(false);
         }
     }
-    
+
     // Space pressed at the end of the word
-    if (input_text[input_length-1] == ' ' && is_correct) {
+    bool check = input_text[input_length-1] == ' ';
+    g_print("IS correct: %i\n", is_correct);
+    g_print("IS length good: %i\n", check);
+    if (check && is_correct) {
         gtk_entry_buffer_set_text(buffer, "", -1);
         gtk_entry_set_buffer(GTK_ENTRY(widget), buffer);
         another_word();
+        g_print("DONE! DONE!\n");
     }
-
-    first_iter = false;
+    
+    format_sentence();
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
@@ -125,6 +111,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Create sentence label
     words = get_words();
+    words_length = get_words_length();
     current_word = words[word_counter];
     word_length = strlen(current_word);
     sentence = get_sentence(words);

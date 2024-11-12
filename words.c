@@ -8,6 +8,8 @@
 #define MAX_WORDS_LEN 30
 #define WORDS_COUNTER 5 
 
+int total_words = 0;
+
 int* get_random_indexes(int count) {
     int *indexes = (int*)malloc(count * sizeof(int));
     if (indexes == NULL) {
@@ -32,7 +34,6 @@ int is_index_in_array(int index, int *array, int size) {
 char** get_words() { 
     FILE *file;
     char buffer[MAX_WORDS_LEN];
-    int total_words = 0;
 
     char **words = (char**)malloc(WORDS_COUNTER * sizeof(char*));
     for (int i = 0; i < WORDS_COUNTER; i++) {
@@ -68,6 +69,10 @@ char** get_words() {
     // }
 
     return words;
+}
+
+int get_words_length() {
+    return total_words;
 }
 
 char* get_sentence(char **words) { 
