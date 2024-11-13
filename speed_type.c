@@ -4,7 +4,8 @@
 #include <string.h>
 #include "words.h"
 
-static int countdown = 50;
+static int countdown = 30;
+static int elapsed_seconds = 0;
 
 static char *sentence;
 
@@ -17,8 +18,10 @@ static int word_counter = 0;
 static GtkWidget *window;
 static GtkWidget *timer;
 static GtkWidget *entry; 
-static GtkWidget *sentence_label; 
+static GtkWidget *sentence_label;
+static GtkWidget *wpm_label; 
 static GtkWidget *markup_string;
+static GtkWidget *progress_bar;
 
 static gboolean update_timer(gpointer user_data) {
     char time[20];
@@ -26,6 +29,12 @@ static gboolean update_timer(gpointer user_data) {
         sprintf(time, "%d", countdown);
         gtk_label_set_text(GTK_LABEL(timer), time);
         countdown--;
+        elapsed_seconds++;
+
+        int wpm = (elapsed_seconds > 0) ? (word_counter * 60 / elapsed_seconds) : 0;
+        char wpm_text[20];
+        sprintf(wpm_text, "WPM: %d", wpm);
+        gtk_label_set_text(GTK_LABEL(wpm_label), wpm_text);
     } else {
         return G_SOURCE_REMOVE;
     }
@@ -76,9 +85,6 @@ static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
     bool is_correct= true;
     int first_incorrect_indx = -1;
 
-    g_print("INPUT TEXT: %s\n", input_text);
-    g_print("INPUT LENGTH: %i\n", input_length);
-    
     for (int i = 0; i < input_length; i++) {
         if (input_text[i] == current_word[i]) {
             continue;
@@ -92,13 +98,10 @@ static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
 
     // Space pressed at the end of the word
     bool check = input_text[input_length-1] == ' ';
-    g_print("IS correct: %i\n", is_correct);
-    g_print("IS length good: %i\n", check);
     if (check && is_correct) {
         gtk_entry_buffer_set_text(buffer, "", -1);
         gtk_entry_set_buffer(GTK_ENTRY(widget), buffer);
         another_word();
-        g_print("DONE! DONE!\n");
         input_length = 0;
     }
     
@@ -109,12 +112,16 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Create the main window
     window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "SpeedType");
-    gtk_window_set_default_size(GTK_WINDOW(window), 500, 500);
+    gtk_window_set_default_size(GTK_WINDOW(window), 500, 300);
     gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 
     // Create a vertical box to hold multiple widgets
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_window_set_child(GTK_WINDOW(window), vbox);
+    gtk_widget_set_margin_start(vbox, 20);  
+    gtk_widget_set_margin_end(vbox, 20);    
+    gtk_widget_set_margin_top(vbox, 20);    
+    gtk_widget_set_margin_bottom(vbox, 20); 
 
     // Create sentence label
     words = get_words();
@@ -131,7 +138,23 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Create a timer label
     timer = gtk_label_new("50");
-    gtk_box_append(GTK_BOX(vbox), timer); // Add timer label to vbox
+    gtk_widget_set_margin_top(timer, 10);
+    gtk_widget_set_margin_bottom(timer, 10);
+    gtk_widget_set_margin_start(timer, 5);
+    gtk_widget_set_margin_end(timer, 5);
+    gtk_box_append(GTK_BOX(vbox), timer);
+
+    // Create WPM label
+    wpm_label = gtk_label_new("WPM: 0");
+    gtk_widget_set_margin_top(wpm_label, 10);
+    gtk_widget_set_margin_bottom(wpm_label, 10);
+    gtk_widget_set_margin_start(wpm_label, 5);
+    gtk_widget_set_margin_end(wpm_label, 5);
+    gtk_box_append(GTK_BOX(vbox), wpm_label);
+
+    // Create progress bar
+    progress_bar = gtk_progress_bar_new();
+    gtk_box_append(GTK_BOX(vbox), progress_bar);
 
     // Create an input entry field
     entry = gtk_entry_new();
