@@ -32,7 +32,7 @@ static gboolean update_timer(gpointer user_data) {
     return G_SOURCE_CONTINUE;
 }
 
-static void format_sentence() {
+static void format_sentence(int first_incorrect_indx, int current_length) {
     GString *markup_string = g_string_new("");
     g_print("WORD COUNTER: %d\n", word_counter);
     g_print("WORDS_LENGTH: %d\n", words_length);
@@ -40,19 +40,29 @@ static void format_sentence() {
 
     // Fill done_words with completed words
     for (int i = 0; i < word_counter; i++) {
-        g_string_append_printf(markup_string, "<span font='24' foreground='green'>%s </span>", words[i]);
+        g_string_append_printf(markup_string, "<span font='24' foreground='green'>%s</span>", words[i]);
     }
 
-    // Add current word 
-    for (int i = 0; i < word_length; i++) { 
-        g_string_append_printf(markup_string, "<span font='24' foreground='red'>%c</span>", current_word[i]);
+    // Already typed letters 
+    for (int i = 0; i < current_length; i++) {
+        if (current_word[i] == ' ') continue;
+        else if (i < first_incorrect_indx || first_incorrect_indx == -1) {
+            g_string_append_printf(markup_string, "<span font='24' foreground='green'>%c</span>", current_word[i]);
+        } else {
+            g_string_append_printf(markup_string, "<span font='24' foreground='red'>%c</span>", current_word[i]);
+        }
     }
-    g_string_append_printf(markup_string, " ");
+    // Rest of the world 
+    for (int i = current_length; i < word_length; i++) { 
+        g_string_append_printf(markup_string, "<span font='24'>%c</span>", current_word[i]);
+    }
+    g_string_append_printf(markup_string, "<span font='24'> </span>");
 
     // Add rest of the sentence to rest_words with correct indexing
     for (int i = word_counter + 1; i < words_length; i++) {
         g_string_append_printf(markup_string, "<span font='24'>%s </span>", words[i]);
     }
+    
     // Display the markup in the label
     gtk_label_set_markup(GTK_LABEL(sentence_label), markup_string->str);
 
@@ -71,7 +81,8 @@ static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
     GtkEntryBuffer *buffer = gtk_entry_get_buffer(GTK_ENTRY(entry));
     const gchar *input_text = gtk_entry_buffer_get_text(buffer);
     int input_length = strlen(input_text);
-    bool is_correct= true; 
+    bool is_correct= true;
+    int first_incorrect_indx = -1;
 
     g_print("INPUT TEXT: %s\n", input_text);
     g_print("INPUT LENGTH: %i\n", input_length);
@@ -81,6 +92,9 @@ static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
             continue;
         } else {
             is_correct = false;
+            if (first_incorrect_indx == -1) {
+                first_incorrect_indx = i;
+            }
         }
     }
 
@@ -93,9 +107,10 @@ static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
         gtk_entry_set_buffer(GTK_ENTRY(widget), buffer);
         another_word();
         g_print("DONE! DONE!\n");
+        input_length = 0;
     }
     
-    format_sentence();
+    format_sentence(first_incorrect_indx, input_length);
 }
 
 static void activate(GtkApplication *app, gpointer user_data) {
