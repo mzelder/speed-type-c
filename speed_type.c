@@ -34,39 +34,29 @@ static gboolean update_timer(gpointer user_data) {
 
 static void format_sentence(int first_incorrect_indx, int current_length) {
     GString *markup_string = g_string_new("");
-    g_print("WORD COUNTER: %d\n", word_counter);
-    g_print("WORDS_LENGTH: %d\n", words_length);
-    g_print("CURRENT_WORD: %s\n", current_word);
 
-    // Fill done_words with completed words
+    // Already written words
     for (int i = 0; i < word_counter; i++) {
         g_string_append_printf(markup_string, "<span font='24' foreground='green'>%s</span>", words[i]);
     }
 
-    // Already typed letters 
+    // Current word  
     for (int i = 0; i < current_length; i++) {
         if (current_word[i] == ' ') continue;
-        else if (i < first_incorrect_indx || first_incorrect_indx == -1) {
-            g_string_append_printf(markup_string, "<span font='24' foreground='green'>%c</span>", current_word[i]);
-        } else {
-            g_string_append_printf(markup_string, "<span font='24' foreground='red'>%c</span>", current_word[i]);
-        }
+        char *color = (i < first_incorrect_indx || first_incorrect_indx == -1) ? "green" : "red";
+        g_string_append_printf(markup_string, "<span font='24' underline='single' foreground='%s'>%c</span>", color, current_word[i]);
     }
-    // Rest of the world 
     for (int i = current_length; i < word_length; i++) { 
         g_string_append_printf(markup_string, "<span font='24'>%c</span>", current_word[i]);
     }
     g_string_append_printf(markup_string, "<span font='24'> </span>");
 
-    // Add rest of the sentence to rest_words with correct indexing
+    // Words that wasnt typed 
     for (int i = word_counter + 1; i < words_length; i++) {
         g_string_append_printf(markup_string, "<span font='24'>%s </span>", words[i]);
     }
     
-    // Display the markup in the label
     gtk_label_set_markup(GTK_LABEL(sentence_label), markup_string->str);
-
-    // Free dynamically allocated memory
     g_free(markup_string);
 }
 
@@ -74,7 +64,9 @@ static void another_word() {
     word_counter++;
     current_word = words[word_counter];
     word_length = strlen(current_word);
-    current_word[word_length] = ' ';
+    if (word_counter != words_length) {
+        current_word[word_length] = ' ';
+    }
 }
 
 static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
