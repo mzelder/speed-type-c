@@ -23,6 +23,7 @@ static GtkWidget *race_label;
 static GtkWidget *wpm_label; 
 static GtkWidget *markup_string;
 static GtkWidget *progress_bar;
+static GtkWidget *rocket_image; 
 
 static gboolean update_timer(gpointer user_data) {
     char time[20];
@@ -129,6 +130,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *top_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 500);
     GtkWidget *mid_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 500);
     GtkWidget *bottom_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    GtkWidget *progress_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 20);
 
     gtk_window_set_child(GTK_WINDOW(window), main_box);
     gtk_widget_set_margin_start(main_box, 20);  
@@ -144,9 +146,14 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_label_set_markup(GTK_LABEL(timer), "<span font='30' weight='bold'>180</span>");
     gtk_box_append(GTK_BOX(top_box), timer);
 
+    rocket_image = gtk_image_new_from_file("rocket.png");
+    gtk_widget_set_size_request(GTK_WIDGET(rocket_image), 800, 100);
+    gtk_box_append(GTK_BOX(progress_box), rocket_image); 
+    
     progress_bar = gtk_progress_bar_new();
-    gtk_widget_set_size_request(GTK_WIDGET(progress_bar), 500, 30);
-    gtk_box_append(GTK_BOX(mid_box), progress_bar);
+    gtk_widget_set_size_request(GTK_WIDGET(progress_bar), 1000, 10);
+    gtk_box_append(GTK_BOX(progress_box), progress_bar);
+    gtk_box_append(GTK_BOX(mid_box), progress_box);
 
     wpm_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(wpm_label), "<span font='30' weight='bold'>WPM: 0</span>");
