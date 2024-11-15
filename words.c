@@ -6,7 +6,7 @@
 
 #define MAX_WORDS 370000 
 #define MAX_WORDS_LEN 30
-#define WORDS_COUNTER 5 
+#define WORDS_COUNTER 10 
 
 int total_words = 0;
 

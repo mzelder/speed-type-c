@@ -4,7 +4,7 @@
 #include <string.h>
 #include "words.h"
 
-static int countdown = 30;
+static int countdown = 180;
 static int elapsed_seconds = 0;
 
 static char *sentence;
@@ -19,22 +19,25 @@ static GtkWidget *window;
 static GtkWidget *timer;
 static GtkWidget *entry; 
 static GtkWidget *sentence_label;
+static GtkWidget *race_label;
 static GtkWidget *wpm_label; 
 static GtkWidget *markup_string;
 static GtkWidget *progress_bar;
 
 static gboolean update_timer(gpointer user_data) {
     char time[20];
+    char markup[100];
+    
     if (countdown >= 0) {
         sprintf(time, "%d", countdown);
-        gtk_label_set_text(GTK_LABEL(timer), time);
+        sprintf(markup, "<span font='30' weight='bold'>%s</span>", time);
+        gtk_label_set_markup(GTK_LABEL(timer), markup);
         countdown--;
         elapsed_seconds++;
 
         int wpm = (elapsed_seconds > 0) ? (word_counter * 60 / elapsed_seconds) : 0;
-        char wpm_text[20];
-        sprintf(wpm_text, "WPM: %d", wpm);
-        gtk_label_set_text(GTK_LABEL(wpm_label), wpm_text);
+        sprintf(markup, "<span font='30' weight='bold'>WPM: %d</span>", wpm);
+        gtk_label_set_markup(GTK_LABEL(wpm_label), markup);
     } else {
         return G_SOURCE_REMOVE;
     }
@@ -105,6 +108,7 @@ static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
         input_length = 0;
     }
     
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progress_bar), (double)word_counter / words_length);
     format_sentence(first_incorrect_indx, input_length);
 }
 
@@ -112,18 +116,52 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // Create the main window
     window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "SpeedType");
-    gtk_window_set_default_size(GTK_WINDOW(window), 500, 300);
+    gtk_window_set_default_size(GTK_WINDOW(window), 800, 300);
     gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 
-    // Create a vertical box to hold multiple widgets
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_window_set_child(GTK_WINDOW(window), vbox);
-    gtk_widget_set_margin_start(vbox, 20);  
-    gtk_widget_set_margin_end(vbox, 20);    
-    gtk_widget_set_margin_top(vbox, 20);    
-    gtk_widget_set_margin_bottom(vbox, 20); 
+    // Load CSS
+    GtkCssProvider *css_provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_path(css_provider, "style.css");
+    gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-    // Create sentence label
+    // Create a vertical box to hold multiple widgets
+    GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 50);
+    GtkWidget *top_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 500);
+    GtkWidget *mid_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 500);
+    GtkWidget *bottom_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+
+    gtk_window_set_child(GTK_WINDOW(window), main_box);
+    gtk_widget_set_margin_start(main_box, 20);  
+    gtk_widget_set_margin_end(main_box, 20);    
+    gtk_widget_set_margin_top(main_box, 20);    
+    gtk_widget_set_margin_bottom(main_box, 20); 
+
+    race_label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(race_label), "<span font='30' weight='bold'>The race is on! Type the text below:</span>");
+    gtk_box_append(GTK_BOX(top_box), race_label);
+
+    timer = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(timer), "<span font='30' weight='bold'>180</span>");
+    gtk_box_append(GTK_BOX(top_box), timer);
+
+    progress_bar = gtk_progress_bar_new();
+    gtk_widget_set_size_request(GTK_WIDGET(progress_bar), 500, 30);
+    gtk_box_append(GTK_BOX(mid_box), progress_bar);
+
+    wpm_label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(wpm_label), "<span font='30' weight='bold'>WPM: 0</span>");
+    gtk_widget_set_margin_top(wpm_label, 10);
+    gtk_widget_set_margin_bottom(wpm_label, 10);
+    gtk_widget_set_margin_start(wpm_label, 5);
+    gtk_widget_set_margin_end(wpm_label, 5);
+    gtk_box_append(GTK_BOX(mid_box), wpm_label);
+
+    // Adding all boxes to main one 
+    gtk_box_append(GTK_BOX(main_box), top_box);
+    gtk_box_append(GTK_BOX(main_box), mid_box);
+    gtk_box_append(GTK_BOX(main_box), bottom_box);
+
+    // // Create sentence label
     words = get_words();
     words_length = get_words_length();
     current_word = words[word_counter];
@@ -134,32 +172,17 @@ static void activate(GtkApplication *app, gpointer user_data) {
     const char *format = "<span font='24'>%s</span>";
     char * markup = g_markup_printf_escaped(format, sentence);
     gtk_label_set_markup(GTK_LABEL(sentence_label), markup);
-    gtk_box_append(GTK_BOX(vbox), sentence_label);
+    gtk_box_append(GTK_BOX(bottom_box), sentence_label);
 
-    // Create a timer label
-    timer = gtk_label_new("50");
-    gtk_widget_set_margin_top(timer, 10);
-    gtk_widget_set_margin_bottom(timer, 10);
-    gtk_widget_set_margin_start(timer, 5);
-    gtk_widget_set_margin_end(timer, 5);
-    gtk_box_append(GTK_BOX(vbox), timer);
-
-    // Create WPM label
-    wpm_label = gtk_label_new("WPM: 0");
-    gtk_widget_set_margin_top(wpm_label, 10);
-    gtk_widget_set_margin_bottom(wpm_label, 10);
-    gtk_widget_set_margin_start(wpm_label, 5);
-    gtk_widget_set_margin_end(wpm_label, 5);
-    gtk_box_append(GTK_BOX(vbox), wpm_label);
-
-    // Create progress bar
-    progress_bar = gtk_progress_bar_new();
-    gtk_box_append(GTK_BOX(vbox), progress_bar);
-
-    // Create an input entry field
+    // // Create an input entry field
     entry = gtk_entry_new();
     GtkEntryBuffer *buffer = gtk_entry_buffer_new("", -1);
-    gtk_box_append(GTK_BOX(vbox), entry); 
+    gtk_box_append(GTK_BOX(bottom_box), entry); 
+
+    // Set classes for elements
+    gtk_widget_set_name(race_label, "race_label");
+    gtk_widget_set_name(entry, "entry");
+    gtk_widget_set_name(progress_bar, "progress_bar");
 
     g_signal_connect(entry, "changed", G_CALLBACK(on_entry_changed), NULL);
 

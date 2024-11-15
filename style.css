@@ -1,0 +1,16 @@
+window {
+    background-image: url("background.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    color: white;
+}
+
+#entry {
+    color: black;
+    opacity: 50%;
+}
+
+#progress_bar {
+    /* opacity: 0%; */
+    background-color: red;
+}
