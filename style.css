@@ -7,9 +7,27 @@ window {
 
 #entry {
     color: black;
-    opacity: 50%;
+    opacity: 0%;
 }
 
 #progress_bar {
+    border: 2px solid #ffffff;
+    border-radius: 20px;
+    background: radial-gradient(circle at center, #000000 30%, #1a1a2e);
+}
+
+#progress_bar > trough {
+    background: url('starry_background.jpg') no-repeat center;
+    background-size: cover;
+    border-radius: 20px;
+}
+
+#progress_bar > trough > progress {
+    background: linear-gradient(to right, #00c3ff, #ffff1c);
+    border-radius: 20px;
+    box-shadow: 0 0 15px #ffff1c, 0 0 30px #00c3ff;
+}
+
+#sentence_label {
     
 }
