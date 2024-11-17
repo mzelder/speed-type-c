@@ -4,7 +4,7 @@
 #include <string.h>
 #include "words.h"
 
-static int countdown = 180;
+static int countdown = 60;
 static int elapsed_seconds = 0;
 
 static char *sentence;
@@ -14,6 +14,7 @@ static int words_length;
 static char *current_word;
 static int word_length;
 static int word_counter = 0;
+static int *previous_input;
 
 static GtkWidget *window;
 static GtkWidget *timer;
@@ -24,6 +25,55 @@ static GtkWidget *wpm_label;
 static GtkWidget *progress_bar;
 static GtkWidget *rocket_image; 
 static GtkWidget *rocket_container;
+
+static void show_statistics() {
+    // Calculate statistics
+    int wpm = (elapsed_seconds > 0) ? (word_counter * 60 / elapsed_seconds) : 0;
+
+    // Create a new layout for the statistics (GtkBox with vertical orientation)
+    GtkWidget *stats_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);  // Adjust spacing between elements
+    gtk_widget_set_margin_top(stats_box, 50);
+    gtk_widget_set_margin_bottom(stats_box, 50);
+    gtk_widget_set_margin_start(stats_box, 50);
+    gtk_widget_set_margin_end(stats_box, 50);
+
+    // Create a detailed statistics message
+    GString *details = g_string_new("");
+    g_string_append_printf(details, "<span font='36' weight='bold' foreground='#4CAF50'>Typing Statistics</span>\n");  // Increase font size for the title and change color
+    g_string_append_printf(details, "<span font='28'>Words Per Minute (WPM): <b>%d</b></span>\n", wpm);
+    g_string_append_printf(details, "<span font='28'>Time Elapsed: <b>%d seconds</b></span>", elapsed_seconds);
+
+    // Create a label to show the detailed statistics message
+    GtkWidget *stats_label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(stats_label), details->str);
+
+    // Add the label to the box (container)
+    gtk_box_append(GTK_BOX(stats_box), stats_label);
+
+    // Add a "Close" button to exit the program
+    GtkWidget *close_button = gtk_button_new_with_label("Close");
+    gtk_widget_set_size_request(close_button, 150, 50);  // Adjust button size
+    gtk_widget_set_margin_top(close_button, 20);  // Add some space above the button
+    gtk_widget_set_margin_bottom(close_button, 10);  // Add some space below the button
+
+    // Connect the button to close the window
+    g_signal_connect(close_button, "clicked", G_CALLBACK(gtk_window_close), window);
+    
+    // Add the button to the box
+    gtk_box_append(GTK_BOX(stats_box), close_button);
+
+    // Clear the current content of the window (if any)
+    GtkWidget *current_child = gtk_window_get_child(GTK_WINDOW(window));
+    if (current_child) {
+        gtk_window_set_child(GTK_WINDOW(window), NULL); // Remove the current child
+    }
+
+    // Set the new layout as the window content
+    gtk_window_set_child(GTK_WINDOW(window), stats_box);
+
+    // Free the GString memory
+    g_string_free(details, TRUE);
+}
 
 static gboolean update_timer(gpointer user_data) {
     char time[20];
@@ -40,6 +90,7 @@ static gboolean update_timer(gpointer user_data) {
         sprintf(markup, "<span font='30' weight='bold'>WPM: %d</span>", wpm);
         gtk_label_set_markup(GTK_LABEL(wpm_label), markup);
     } else {
+        show_statistics();
         return G_SOURCE_REMOVE;
     }
     return G_SOURCE_CONTINUE;
@@ -72,6 +123,12 @@ static void format_sentence(int first_incorrect_indx, int current_length) {
 
 static void another_word() {    
     word_counter++;
+    
+    if (word_counter >= words_length) {
+        show_statistics();
+        return;
+    }
+    
     current_word = words[word_counter];
     word_length = strlen(current_word);
     if (word_counter != words_length) {
@@ -81,7 +138,7 @@ static void another_word() {
 
 static void move_rocket() {
     double fraction = (double)word_counter / words_length;
-    int x_position = (int)(fraction * 800); // Assuming max width is 800px
+    int x_position = (int)(fraction * 700);
     gtk_widget_set_margin_start(rocket_image, x_position);
 }
 
@@ -119,7 +176,7 @@ static void on_entry_changed(GtkWidget *widget, gpointer user_data) {
 static void activate(GtkApplication *app, gpointer user_data) {
     window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "SpeedType");
-    gtk_window_set_default_size(GTK_WINDOW(window), 800, 0);
+    gtk_window_set_default_size(GTK_WINDOW(window), 800, -1);
     gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 
     GtkCssProvider *css_provider = gtk_css_provider_new();
@@ -129,7 +186,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     GtkWidget *top_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 500);
     GtkWidget *mid_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *bottom_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    GtkWidget *bottom_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *progress_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
     gtk_window_set_child(GTK_WINDOW(window), main_box);
@@ -143,22 +200,22 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(top_box), race_label);
 
     timer = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(timer), "<span font='30' weight='bold'>180</span>");
+    gtk_label_set_markup(GTK_LABEL(timer), "<span font='30' weight='bold'>60</span>");
     gtk_box_append(GTK_BOX(top_box), timer);
 
     rocket_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     rocket_image = gtk_image_new_from_file("rocket.png");
-    gtk_widget_set_size_request(GTK_WIDGET(rocket_image), 200, 200);
+    gtk_widget_set_size_request(GTK_WIDGET(rocket_image), 150, 150);
     gtk_box_append(GTK_BOX(rocket_container), rocket_image);
     gtk_box_append(GTK_BOX(progress_box), rocket_container);
 
     progress_bar = gtk_progress_bar_new();
-    gtk_widget_set_size_request(GTK_WIDGET(progress_bar), 1000, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(progress_bar), 800, -1);
     gtk_box_append(GTK_BOX(progress_box), progress_bar);
     gtk_box_append(GTK_BOX(mid_box), progress_box);
 
     wpm_label = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(wpm_label), "<span font='30' weight='bold'>WPM: 0</span>");
+    gtk_label_set_markup(GTK_LABEL(wpm_label), "<span font='24' weight='bold'>WPM: 0</span>");
     gtk_widget_set_margin_top(wpm_label, 10);
     gtk_widget_set_margin_bottom(wpm_label, 10);
     gtk_widget_set_margin_start(wpm_label, 5);
@@ -175,7 +232,6 @@ static void activate(GtkApplication *app, gpointer user_data) {
     sentence_label = gtk_label_new(sentence);
     gtk_label_set_wrap(GTK_LABEL(sentence_label), TRUE); 
     gtk_label_set_wrap_mode(GTK_LABEL(sentence_label), PANGO_WRAP_WORD);
-    gtk_widget_set_size_request(GTK_WIDGET(sentence_label), 800, -1);
     gtk_label_set_xalign(GTK_LABEL(sentence_label), 0.0);
     const char *format = "<span font='24'>%s</span>";
     char * markup = g_markup_printf_escaped(format, sentence);
@@ -190,6 +246,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_name(entry, "entry");
     gtk_widget_set_name(progress_bar, "progress_bar");
     gtk_widget_set_name(sentence_label, "sentence_label");
+    gtk_widget_set_name(wpm_label, "wpm_label");
+    gtk_widget_set_name(timer, "timer");
 
     gtk_box_append(GTK_BOX(main_box), top_box);
     gtk_box_append(GTK_BOX(main_box), mid_box);

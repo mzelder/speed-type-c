@@ -1,33 +1,132 @@
+/* General window styles */
 window {
     background-image: url("background.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     color: white;
+    min-width: 800px; /* Ensure the window is at least 800px wide */
+    min-height: 400px;
+    padding: 20px; /* Add some padding around the content */
 }
 
+/* Styling for the entry widget */
 #entry {
     color: black;
-    opacity: 0%;
+    opacity: 100%; /* Make the entry visible */
+    font-size: 20px;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: rgba(255, 255, 255, 0.7); /* Slightly transparent white background for visibility */
+    border-radius: 10px;
+    border: 2px solid #fff; /* White border around the entry */
 }
 
+/* Overall container of the progress bar */
 #progress_bar {
-    border: 2px solid #ffffff;
-    border-radius: 20px;
-    background: radial-gradient(circle at center, #000000 30%, #1a1a2e);
+    border: none;
+    border-radius: 25px; /* Rounded corners for the progress bar container */
+    background: black;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); /* Subtle glow effect around the bar */
+    min-height: 50px;
+    min-width: 800px;
 }
 
+/* Background of the progress bar (the trough) */
 #progress_bar > trough {
-    background: url('starry_background.jpg') no-repeat center;
-    background-size: cover;
-    border-radius: 20px;
+    background: none;
+    border-radius: 25px;
+    min-height: 50px;
+    min-width: 800px;
 }
 
+/* Styling the progress bar's "fire" progress fill */
 #progress_bar > trough > progress {
-    background: linear-gradient(to right, #00c3ff, #ffff1c);
-    border-radius: 20px;
-    box-shadow: 0 0 15px #ffff1c, 0 0 30px #00c3ff;
+    background: linear-gradient(45deg, #ff5500, #ff9900, #ffcc00, #ff0000); /* Gradient fiery colors */
+    border-radius: 25px;
+    box-shadow: 0 0 15px #ff3300, 0 0 25px #ff9900, 0 0 35px #ffcc00; /* Glowing effect around progress */
+    border: none; /* Remove the default border */
+    transition: width 0.3s ease-in-out; /* Smooth transition for the progress change */
+    min-height: 50px;
+    animation: fireAnimation 1.5s infinite alternate, flickerAnimation 1.2s infinite linear; /* Combined fire animation */
 }
 
+/* Keyframe animation to simulate a fire effect with more dynamic color changes */
+@keyframes fireAnimation {
+    0% {
+        background: linear-gradient(45deg, #ff5500, #ff9900, #ffcc00, #ff0000);
+        box-shadow: 0 0 20px #ff3300, 0 0 30px #ff9900, 0 0 40px #ffcc00;
+    }
+    40% {
+        background: linear-gradient(45deg, #ff3300, #ff6600, #ff9933, #ff0000);
+        box-shadow: 0 0 30px #ff6600, 0 0 40px #ff3300, 0 0 50px #ff9933;
+    }
+    100% {
+        background: linear-gradient(45deg, #ff5500, #ff9900, #ffcc00, #ff0000);
+        box-shadow: 0 0 20px #ff3300, 0 0 30px #ff9900, 0 0 40px #ffcc00;
+    }
+}
+
+/* Keyframe animation to simulate a flickering flame effect */
+@keyframes flickerAnimation {
+    0% {
+        transform: scale(1.01);
+        box-shadow: 0 0 10px #ff3300, 0 0 15px #ff6600, 0 0 30px #ffcc00;
+    }
+    20% {
+        transform: scale(1.05);
+        box-shadow: 0 0 25px #ff3300, 0 0 40px #ff6600, 0 0 50px #ffcc00;
+    }
+    40% {
+        transform: scale(1.03);
+        box-shadow: 0 0 15px #ff6600, 0 0 30px #ff3300, 0 0 35px #ff9933;
+    }
+    60% {
+        transform: scale(1.02);
+        box-shadow: 0 0 20px #ff3300, 0 0 25px #ff9900, 0 0 40px #ffcc00;
+    }
+    80% {
+        transform: scale(1.04);
+        box-shadow: 0 0 25px #ff3300, 0 0 45px #ff6600, 0 0 60px #ffcc00;
+    }
+    100% {
+        transform: scale(1.01);
+        box-shadow: 0 0 10px #ff3300, 0 0 20px #ff9900, 0 0 30px #ffcc00;
+    }
+}
+
+/* Styling for the sentence label (the text you want to display) */
 #sentence_label {
-    
+    font-stretch: ultra-expanded;
+    /* letter-spacing: 1px; Increased letter spacing for better visibility */
+    padding: 15px;
+    font-size: 24px; /* Increased font size for better readability */
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background to improve readability */
+    border-radius: 10px;
+    margin-top: 20px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); /* Add a subtle glow effect */
+}
+
+/* Styling for the race label (for the message at the top) */
+#race_label {
+    font-size: 30px;
+    font-weight: bold;
+    color: #FFFFFF;
+    margin-top: 20px;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); /* Add some shadow for contrast */
+}
+
+/* Styling for the timer label */
+#timer {
+    font-size: 30px;
+    font-weight: bold;
+    color: #FFFFFF;
+    margin-top: 10px;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); /* Shadow effect for readability */
+}
+
+/* Styling for the WPM label */
+#wpm_label {
+    font-size: 15px;
+    font-weight: bold;
+    color: #FFFFFF;
 }
