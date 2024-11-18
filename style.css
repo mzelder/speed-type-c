@@ -1,37 +1,33 @@
-/* General window styles */
 window {
     background-image: url("background.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     color: white;
-    min-width: 800px; /* Ensure the window is at least 800px wide */
+    min-width: 800px;
     min-height: 400px;
-    padding: 20px; /* Add some padding around the content */
+    padding: 20px;
 }
 
-/* Styling for the entry widget */
 #entry {
     color: black;
-    opacity: 100%; /* Make the entry visible */
+    opacity: 100%;
     font-size: 20px;
     padding: 10px;
     margin-top: 10px;
-    background-color: rgba(255, 255, 255, 0.7); /* Slightly transparent white background for visibility */
+    background-color: rgba(255, 255, 255, 0.7);
     border-radius: 10px;
-    border: 2px solid #fff; /* White border around the entry */
+    border: 2px solid #fff;
 }
 
-/* Overall container of the progress bar */
 #progress_bar {
     border: none;
-    border-radius: 25px; /* Rounded corners for the progress bar container */
+    border-radius: 25px;
     background: black;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); /* Subtle glow effect around the bar */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
     min-height: 50px;
     min-width: 800px;
 }
 
-/* Background of the progress bar (the trough) */
 #progress_bar > trough {
     background: none;
     border-radius: 25px;
@@ -39,18 +35,16 @@ window {
     min-width: 800px;
 }
 
-/* Styling the progress bar's "fire" progress fill */
 #progress_bar > trough > progress {
-    background: linear-gradient(45deg, #ff5500, #ff9900, #ffcc00, #ff0000); /* Gradient fiery colors */
+    background: linear-gradient(45deg, #ff5500, #ff9900, #ffcc00, #ff0000);
     border-radius: 25px;
-    box-shadow: 0 0 15px #ff3300, 0 0 25px #ff9900, 0 0 35px #ffcc00; /* Glowing effect around progress */
-    border: none; /* Remove the default border */
-    transition: width 0.3s ease-in-out; /* Smooth transition for the progress change */
+    box-shadow: 0 0 15px #ff3300, 0 0 25px #ff9900, 0 0 35px #ffcc00;
+    border: none;
+    transition: width 0.3s ease-in-out;
     min-height: 50px;
-    animation: fireAnimation 1.5s infinite alternate, flickerAnimation 1.2s infinite linear; /* Combined fire animation */
+    animation: fireAnimation 1.5s infinite alternate, flickerAnimation 1.2s infinite linear;
 }
 
-/* Keyframe animation to simulate a fire effect with more dynamic color changes */
 @keyframes fireAnimation {
     0% {
         background: linear-gradient(45deg, #ff5500, #ff9900, #ffcc00, #ff0000);
@@ -66,7 +60,6 @@ window {
     }
 }
 
-/* Keyframe animation to simulate a flickering flame effect */
 @keyframes flickerAnimation {
     0% {
         transform: scale(1.01);
@@ -94,39 +87,65 @@ window {
     }
 }
 
-/* Styling for the sentence label (the text you want to display) */
 #sentence_label {
     font-stretch: ultra-expanded;
-    /* letter-spacing: 1px; Increased letter spacing for better visibility */
     padding: 15px;
-    font-size: 24px; /* Increased font size for better readability */
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background to improve readability */
+    font-size: 24px;
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
     margin-top: 20px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); /* Add a subtle glow effect */
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
 }
 
-/* Styling for the race label (for the message at the top) */
 #race_label {
     font-size: 30px;
     font-weight: bold;
     color: #FFFFFF;
     margin-top: 20px;
-    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); /* Add some shadow for contrast */
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Styling for the timer label */
 #timer {
     font-size: 30px;
     font-weight: bold;
     color: #FFFFFF;
     margin-top: 10px;
-    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); /* Shadow effect for readability */
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Styling for the WPM label */
 #wpm_label {
     font-size: 15px;
     font-weight: bold;
     color: #FFFFFF;
+}
+
+#close_button {
+    font-stretch: ultra-expanded;
+    padding: 15px;
+    font-size: 24px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    margin-top: 20px;
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease-in-out;
+}
+
+#close_button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 1);
+    animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(255, 255, 255, 1);
+    }
+    100% {
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+    }
 }

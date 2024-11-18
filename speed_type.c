@@ -1,10 +1,11 @@
 #include <gtk/gtk.h>
+#include <gst/gst.h> 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "words.h"
 
-static int countdown = 60;
+static int countdown = 30;
 static int elapsed_seconds = 0;
 
 static char *sentence;
@@ -26,60 +27,60 @@ static GtkWidget *progress_bar;
 static GtkWidget *rocket_image; 
 static GtkWidget *rocket_container;
 
+void close_window_callback(GtkButton *button, gpointer data) {
+    GtkWindow *window = GTK_WINDOW(data);
+    if (GTK_IS_WINDOW(window)) {
+        gtk_window_destroy(window);
+    } else {
+        g_warning("Attempted to destroy an invalid GtkWindow");
+    }
+}
+
 static void show_statistics() {
-    // Calculate statistics
     int wpm = (elapsed_seconds > 0) ? (word_counter * 60 / elapsed_seconds) : 0;
 
-    // Create a new layout for the statistics (GtkBox with vertical orientation)
-    GtkWidget *stats_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);  // Adjust spacing between elements
+    GtkWidget *stats_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
     gtk_widget_set_margin_top(stats_box, 50);
     gtk_widget_set_margin_bottom(stats_box, 50);
     gtk_widget_set_margin_start(stats_box, 50);
     gtk_widget_set_margin_end(stats_box, 50);
 
-    // Create a detailed statistics message
     GString *details = g_string_new("");
-    g_string_append_printf(details, "<span font='36' weight='bold' foreground='#4CAF50'>Typing Statistics</span>\n");  // Increase font size for the title and change color
+    g_string_append_printf(details, "<span font='36' weight='bold' foreground='#4CAF50'>Typing Statistics</span>\n");
     g_string_append_printf(details, "<span font='28'>Words Per Minute (WPM): <b>%d</b></span>\n", wpm);
     g_string_append_printf(details, "<span font='28'>Time Elapsed: <b>%d seconds</b></span>", elapsed_seconds);
 
-    // Create a label to show the detailed statistics message
     GtkWidget *stats_label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(stats_label), details->str);
 
-    // Add the label to the box (container)
     gtk_box_append(GTK_BOX(stats_box), stats_label);
 
-    // Add a "Close" button to exit the program
     GtkWidget *close_button = gtk_button_new_with_label("Close");
-    gtk_widget_set_size_request(close_button, 150, 50);  // Adjust button size
-    gtk_widget_set_margin_top(close_button, 20);  // Add some space above the button
-    gtk_widget_set_margin_bottom(close_button, 10);  // Add some space below the button
+    gtk_widget_set_size_request(close_button, 150, 50);
+    gtk_widget_set_margin_top(close_button, 20);
+    gtk_widget_set_margin_bottom(close_button, 10);
+    gtk_widget_set_name(close_button, "close_button");
 
-    // Connect the button to close the window
-    g_signal_connect(close_button, "clicked", G_CALLBACK(gtk_window_close), window);
+    g_signal_connect(close_button, "clicked", G_CALLBACK(close_window_callback), window);
     
-    // Add the button to the box
     gtk_box_append(GTK_BOX(stats_box), close_button);
 
-    // Clear the current content of the window (if any)
     GtkWidget *current_child = gtk_window_get_child(GTK_WINDOW(window));
     if (current_child) {
-        gtk_window_set_child(GTK_WINDOW(window), NULL); // Remove the current child
+        gtk_window_set_child(GTK_WINDOW(window), NULL);
     }
 
-    // Set the new layout as the window content
     gtk_window_set_child(GTK_WINDOW(window), stats_box);
 
-    // Free the GString memory
     g_string_free(details, TRUE);
 }
+
 
 static gboolean update_timer(gpointer user_data) {
     char time[20];
     char markup[100];
     
-    if (countdown >= 0) {
+    if (countdown > 0) {
         sprintf(time, "%d", countdown);
         sprintf(markup, "<span font='30' weight='bold'>%s</span>", time);
         gtk_label_set_markup(GTK_LABEL(timer), markup);
@@ -184,7 +185,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
     GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    GtkWidget *top_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 500);
+    GtkWidget *top_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 300);
     GtkWidget *mid_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *bottom_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *progress_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -200,7 +201,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(top_box), race_label);
 
     timer = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(timer), "<span font='30' weight='bold'>60</span>");
+    gtk_label_set_markup(GTK_LABEL(timer), "<span font='30' weight='bold'>30</span>");
     gtk_box_append(GTK_BOX(top_box), timer);
 
     rocket_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

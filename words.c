@@ -6,7 +6,7 @@
 
 #define MAX_WORDS 370000 
 #define MAX_WORDS_LEN 30
-#define WORDS_COUNTER 2
+#define WORDS_COUNTER 20
 
 int total_words = 0;
 
@@ -29,6 +29,15 @@ int is_index_in_array(int index, int *array, int size) {
         }
     }
     return 0; 
+}
+
+void shuffle_words(char **words, int count) {
+    for (int i = count - 1; i > 0; i--) {
+        int j = rand() % (i + 1); 
+        char *temp = words[i];
+        words[i] = words[j];
+        words[j] = temp;
+    }
 }
 
 char** get_words() { 
@@ -63,10 +72,7 @@ char** get_words() {
     fclose(file);
     free(random_indexes);
 
-    // DEBUG
-    // for (int i = 0; i < total_words; i++) {
-    //     printf("Line(%d): %s\n", i, words[i]);
-    // }
+    shuffle_words(words, total_words);
 
     return words;
 }
