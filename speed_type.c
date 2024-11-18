@@ -216,7 +216,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_box_append(GTK_BOX(mid_box), progress_box);
 
     wpm_label = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL(wpm_label), "<span font='24' weight='bold'>WPM: 0</span>");
+    gtk_label_set_markup(GTK_LABEL(wpm_label), "<span font='30' weight='bold'>WPM: 0</span>");
     gtk_widget_set_margin_top(wpm_label, 10);
     gtk_widget_set_margin_bottom(wpm_label, 10);
     gtk_widget_set_margin_start(wpm_label, 5);
